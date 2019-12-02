@@ -14,18 +14,22 @@ func fatalOnError(err error, msg string) {
 	}
 }
 
+const expected = 19690720
+
 func main() {
 	codes := mustRead("../input.txt")
 
-	// To do this, before running the program,
-	// - replace position 1 with the value 12
-	// - and replace position 2 with the value 2.
-	codes[1] = 12
-	codes[2] = 2
+	for n := 0; n < 100; n++ {
+		for v := 0; v < 100; v++ {
+			output := run(n, v, codes)
+			if output[0] == expected {
+				fmt.Printf("noun: %v, verb: %v\n100 * noun + verb = %v\n", n, v, 100*n+v)
+				return
+			}
+		}
+	}
 
-	output := restore(codes)
-
-	fmt.Printf("%v\n", output)
+	fmt.Println("could not find output!")
 }
 
 func mustRead(fn string) []int {
@@ -51,9 +55,13 @@ const (
 	multiplication = 2
 )
 
-func restore(c []int) []int {
+func run(noun, verb int, c []int) []int {
 	var codes = make([]int, len(c))
 	copy(codes, c)
+
+	codes[1] = noun
+	codes[2] = verb
+
 	for i := 0; i < len(codes); i += 4 {
 		op := codes[i]
 		if op == 99 {
@@ -67,7 +75,7 @@ func restore(c []int) []int {
 		} else if op == multiplication {
 			codes[codes[i+3]] = in1 * in2
 		} else {
-			log.Fatalf("invalid opcode %v detected\n", op)
+			return codes
 		}
 	}
 	return codes
